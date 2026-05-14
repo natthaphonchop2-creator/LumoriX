@@ -723,9 +723,9 @@ img {
 .app-preview {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 48px;
+  gap: 36px;
   align-items: center;
-  padding: clamp(58px, 8vw, 110px) max(20px, calc((100vw - 1440px) / 2));
+  padding: clamp(44px, 6vw, 82px) max(20px, calc((100vw - 1440px) / 2));
   color: var(--white);
   background:
     radial-gradient(circle at 80% 0%, rgba(214, 0, 0, 0.28), transparent 34%),
@@ -737,11 +737,11 @@ img {
 }
 
 .app-preview .button-row {
-  margin-top: 28px;
+  margin-top: 22px;
 }
 
 .ad-insight-panel {
-  padding: 24px;
+  padding: 18px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045)),
     rgba(255, 255, 255, 0.06);
@@ -759,38 +759,38 @@ img {
 }
 
 .ad-panel-heading {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .ad-panel-heading span {
   color: var(--red);
   font-family: "Montserrat", "Noto Sans Thai", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .ad-panel-heading strong {
-  padding: 7px 10px;
+  padding: 6px 9px;
   color: var(--white);
   background: rgba(214, 0, 0, 0.18);
   border: 1px solid rgba(214, 0, 0, 0.36);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .slot-ad-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .slot-stat-card {
   position: relative;
   overflow: hidden;
-  min-height: 142px;
-  padding: 18px;
+  min-height: 104px;
+  padding: 13px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
@@ -815,23 +815,28 @@ img {
 .slot-stat-card strong {
   color: var(--white);
   font-family: "Montserrat", "Noto Sans Thai", sans-serif;
-  font-size: clamp(28px, 3.2vw, 42px);
+  font-size: clamp(23px, 2.55vw, 34px);
   line-height: 1.05;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .slot-stat-card span {
-  margin-top: 12px;
+  margin-top: 8px;
   color: rgba(255, 255, 255, 0.84);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .slot-stat-card small {
-  margin-top: 5px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: 4px;
   color: rgba(255, 255, 255, 0.58);
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .slot-number {
@@ -841,8 +846,8 @@ img {
 }
 
 .tariff-chart {
-  margin-top: 14px;
-  padding: 18px;
+  margin-top: 10px;
+  padding: 14px;
   background: rgba(10, 10, 10, 0.34);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
@@ -850,7 +855,7 @@ img {
 
 .tariff-chart h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.28;
 }
 
@@ -863,8 +868,8 @@ img {
   max-width: 520px;
   margin: 0;
   color: rgba(255, 255, 255, 0.58);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.38;
 }
 
 .tariff-chart-head span {
@@ -874,60 +879,10 @@ img {
   font-weight: 800;
 }
 
-.tariff-impact-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.tariff-impact-strip div {
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  padding: 12px 14px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
-    rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 8px;
-}
-
-.tariff-impact-strip div::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
-  background: var(--red);
-  box-shadow: 0 0 18px rgba(214, 0, 0, 0.72);
-}
-
-.tariff-impact-strip strong,
-.tariff-impact-strip span {
-  display: block;
-  position: relative;
-}
-
-.tariff-impact-strip strong {
-  color: var(--white);
-  font-size: clamp(22px, 2.8vw, 34px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.tariff-impact-strip span {
-  margin-top: 5px;
-  color: rgba(255, 255, 255, 0.58);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.25;
-  text-transform: uppercase;
-}
-
 .tariff-line-wrap {
   position: relative;
-  margin-top: 18px;
-  padding: 8px 0 0;
+  margin-top: 12px;
+  padding: 6px 0 0;
   background:
     radial-gradient(circle at 78% 26%, rgba(214, 0, 0, 0.24), transparent 34%),
     radial-gradient(circle at 14% 72%, rgba(255, 255, 255, 0.07), transparent 28%),
@@ -941,7 +896,7 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 260px;
+  min-height: 0;
 }
 
 .tariff-grid-line line {
@@ -1067,8 +1022,8 @@ img {
 .tariff-line-labels {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  padding: 0 18px 16px 48px;
+  gap: 7px;
+  padding: 0 16px 12px 46px;
 }
 
 .tariff-line-labels div {
@@ -1098,9 +1053,9 @@ img {
 }
 
 .ad-panel-note {
-  margin-top: 12px;
+  margin-top: 10px;
   color: rgba(255, 255, 255, 0.48);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.55;
 }
 
@@ -1944,7 +1899,7 @@ img {
   }
 
   .ad-insight-panel {
-    padding: 18px;
+    padding: 14px;
   }
 
   .ad-panel-heading,
@@ -1954,27 +1909,35 @@ img {
   }
 
   .tariff-chart {
-    padding: 14px;
+    padding: 12px;
   }
 
-  .tariff-impact-strip {
-    gap: 7px;
+  .slot-ad-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 
-  .tariff-impact-strip div {
-    padding: 10px 9px;
+  .slot-stat-card {
+    min-height: 78px;
+    padding: 10px 8px;
   }
 
-  .tariff-impact-strip strong {
-    font-size: 20px;
+  .slot-stat-card strong {
+    font-size: 18px;
   }
 
-  .tariff-impact-strip span {
-    font-size: 9px;
+  .slot-stat-card span {
+    margin-top: 5px;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .slot-stat-card small {
+    display: none;
   }
 
   .tariff-line-svg {
-    min-height: 230px;
+    min-height: 0;
   }
 
   .tariff-dot-value {

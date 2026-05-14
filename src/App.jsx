@@ -755,6 +755,7 @@ function TariffForecastChart() {
   const progress = useRemotionProgress(1850);
   const loopFrame = useRemotionLoop(30);
   const isNarrow = useMediaQuery("(max-width: 760px)");
+  const isTiny = useMediaQuery("(max-width: 480px)");
   const points = useMemo(
     () => [
       { label: "งวดก่อน", value: 3.88, detail: "ม.ค.-เม.ย.", state: "actual" },
@@ -769,15 +770,14 @@ function TariffForecastChart() {
   const baselineScenario = useMemo(() => [3.88, 3.95, 4.0, 4.06, 4.12], []);
   const max = 4.7;
   const min = 3.7;
-  const width = isNarrow ? 420 : 720;
-  const height = isNarrow ? 330 : 360;
-  const left = isNarrow ? 38 : 62;
-  const right = isNarrow ? 384 : 660;
-  const top = isNarrow ? 54 : 48;
-  const bottom = isNarrow ? 236 : 264;
+  const width = isTiny ? 420 : isNarrow ? 560 : 720;
+  const height = isTiny ? 286 : isNarrow ? 280 : 310;
+  const left = isTiny ? 38 : isNarrow ? 50 : 62;
+  const right = isTiny ? 384 : isNarrow ? 516 : 660;
+  const top = isTiny ? 44 : isNarrow ? 40 : 42;
+  const bottom = isTiny ? 198 : isNarrow ? 194 : 222;
   const reveal = progress;
   const loopProgress = (loopFrame % 150) / 150;
-  const impact = (((points.at(-1).value - points[1].value) / points[1].value) * 100).toFixed(1);
 
   const { coords, lowerCoords, baselineCoords, linePath, areaPath, bandPath, baselinePath, marker } = useMemo(() => {
     const toCoord = (value, index) => ({
@@ -815,20 +815,6 @@ function TariffForecastChart() {
           <p>เส้นแดงคือกรณีต้นทุนสูง พื้นแดงคือช่วงความเสี่ยงที่บิลอาจขยับ</p>
         </div>
         <span>บาท/หน่วย</span>
-      </div>
-      <div className="tariff-impact-strip">
-        <div>
-          <strong>3.95</strong>
-          <span>ปัจจุบัน</span>
-        </div>
-        <div>
-          <strong>4.59</strong>
-          <span>stress case</span>
-        </div>
-        <div>
-          <strong>+{impact}%</strong>
-          <span>แรงกดดันต่อหน่วย</span>
-        </div>
       </div>
       <div className="tariff-line-wrap">
         <svg className="tariff-line-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="ค่าไฟต่อหน่วยจากปัจจุบันและกรณีคาดการณ์">
