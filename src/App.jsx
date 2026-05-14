@@ -92,13 +92,10 @@ function Link({ to, className, children, onClick, ...props }) {
 }
 
 function Logo({ inverse = false }) {
+  const src = inverse ? "/assets/lumorix-logo-white.png" : "/assets/lumorix-logo-primary.png";
   return (
     <Link to="/" className={`logo ${inverse ? "logo-inverse" : ""}`} aria-label="LumoriX home">
-      <span className="logo-word">
-        <span>Lumori</span>
-        <strong>X</strong>
-      </span>
-      <small>{brand.tagline}</small>
+      <img src={src} alt="LumoriX Next-Generation Energy Market" />
     </Link>
   );
 }
@@ -274,7 +271,7 @@ function Header() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Logo />
+        <Logo inverse />
         <nav className={`main-nav ${open ? "is-open" : ""}`} aria-label="Primary navigation">
           {navItems.map((item) => (
             <div className="nav-group" key={item.href}>
