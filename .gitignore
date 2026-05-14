@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+dist/
+*.log
+tmp-*.png
+
+# Local business/source documents kept outside the website repo payload
+outputs/
+CPP/
+Image/
+*.pdf
+*.xlsx
+*.xls
+*.key
+~$*
+ChatGPT Image 12 พ.ค. 2569 14_30_12.png

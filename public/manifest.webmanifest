@@ -1,0 +1,17 @@
+{
+  "name": "LumoriX Energy Market",
+  "short_name": "LumoriX",
+  "description": "Solar subscription, battery, EV charging, and energy marketplace platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#d60000",
+  "icons": [
+    {
+      "src": "/assets/product-ecosystem.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
