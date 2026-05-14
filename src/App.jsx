@@ -630,73 +630,223 @@ function SlotNumber({ value, decimals = 0 }) {
   return <span className="slot-number" ref={ref}>0</span>;
 }
 
-function TariffForecastChart() {
-  const chartRef = useRef(null);
-  const points = [
-    { label: "งวดก่อน", value: 3.88, detail: "ม.ค.-เม.ย." },
-    { label: "ปัจจุบัน", value: 3.95, detail: "พ.ค.-ส.ค." },
-    { label: "คาดการณ์", value: 4.12, detail: "Q4 low" },
-    { label: "แรงกดดัน", value: 4.35, detail: "Q1 mid" },
-    { label: "ต้นทุนสูง", value: 4.59, detail: "stress" },
-  ];
-  const max = 4.7;
-  const min = 3.7;
-  const width = 640;
-  const height = 300;
-  const left = 48;
-  const right = 604;
-  const top = 42;
-  const bottom = 222;
-  const coords = points.map((point, index) => {
-    const x = left + (index / (points.length - 1)) * (right - left);
-    const y = bottom - ((point.value - min) / (max - min)) * (bottom - top);
-    return { ...point, x, y };
-  });
-  const linePath = coords.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
-  const areaPath = `${linePath} L ${coords.at(-1).x.toFixed(1)} ${bottom} L ${coords[0].x.toFixed(1)} ${bottom} Z`;
+const clamp01 = (value) => Math.min(1, Math.max(0, value));
+
+function remotionEaseOut(value) {
+  const t = clamp01(value);
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function remotionInterpolate(frame, inputRange, outputRange, easing = (value) => value) {
+  const [inputMin, inputMax] = inputRange;
+  const [outputMin, outputMax] = outputRange;
+  const raw = inputMax === inputMin ? 1 : (frame - inputMin) / (inputMax - inputMin);
+  const eased = easing(clamp01(raw));
+  return outputMin + (outputMax - outputMin) * eased;
+}
+
+function useRemotionProgress(durationMs = 1800) {
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return undefined;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const line = chart.querySelector(".tariff-line-path");
-    const area = chart.querySelector(".tariff-area-path");
-    const dots = chart.querySelectorAll(".tariff-dot-group");
-    const length = line.getTotalLength();
+    if (reduceMotion) {
+      setProgress(1);
+      return undefined;
+    }
 
-    gsap.set(line, { strokeDasharray: length, strokeDashoffset: reduceMotion ? 0 : length });
-    gsap.set(area, { autoAlpha: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 12 });
-    gsap.set(dots, { autoAlpha: reduceMotion ? 1 : 0, scale: reduceMotion ? 1 : 0.65, transformOrigin: "center center" });
+    const fps = 60;
+    const totalFrames = Math.max(1, Math.round((durationMs / 1000) * fps));
+    let animationFrame;
+    let startTime;
 
+    const tick = (now) => {
+      if (!startTime) startTime = now;
+      const frame = Math.min(totalFrames, Math.round(((now - startTime) / 1000) * fps));
+      setProgress(remotionInterpolate(frame, [0, totalFrames], [0, 1], remotionEaseOut));
+      if (frame < totalFrames) {
+        animationFrame = requestAnimationFrame(tick);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [durationMs]);
+
+  return progress;
+}
+
+function useRemotionLoop(fps = 30) {
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) return undefined;
 
-    const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-    timeline
-      .to(line, { strokeDashoffset: 0, duration: 1.35 })
-      .to(area, { autoAlpha: 1, y: 0, duration: 0.55 }, "-=0.85")
-      .to(dots, { autoAlpha: 1, scale: 1, duration: 0.42, stagger: 0.08 }, "-=0.35");
+    const interval = 1000 / fps;
+    let animationFrame;
+    let lastTime = 0;
 
-    return () => timeline.kill();
-  }, []);
+    const tick = (now) => {
+      if (now - lastTime >= interval) {
+        setFrame((value) => value + 1);
+        lastTime = now;
+      }
+      animationFrame = requestAnimationFrame(tick);
+    };
+
+    animationFrame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [fps]);
+
+  return frame;
+}
+
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const sync = () => setMatches(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [query]);
+
+  return matches;
+}
+
+function createSmoothPath(points) {
+  if (!points.length) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+
+    const previous = points[index - 1];
+    const beforePrevious = points[index - 2] || previous;
+    const next = points[index + 1] || point;
+    const controlOneX = previous.x + (point.x - beforePrevious.x) / 6;
+    const controlOneY = previous.y + (point.y - beforePrevious.y) / 6;
+    const controlTwoX = point.x - (next.x - previous.x) / 6;
+    const controlTwoY = point.y - (next.y - previous.y) / 6;
+
+    return `${path} C ${controlOneX.toFixed(1)} ${controlOneY.toFixed(1)}, ${controlTwoX.toFixed(1)} ${controlTwoY.toFixed(1)}, ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+  }, "");
+}
+
+function createPolylinePath(points) {
+  return points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
+}
+
+function getTimelinePoint(points, progress) {
+  const scaled = clamp01(progress) * (points.length - 1);
+  const index = Math.min(points.length - 2, Math.floor(scaled));
+  const local = scaled - index;
+  const start = points[index];
+  const end = points[index + 1];
+  return {
+    x: start.x + (end.x - start.x) * local,
+    y: start.y + (end.y - start.y) * local,
+  };
+}
+
+function TariffForecastChart() {
+  const progress = useRemotionProgress(1850);
+  const loopFrame = useRemotionLoop(30);
+  const isNarrow = useMediaQuery("(max-width: 760px)");
+  const points = useMemo(
+    () => [
+      { label: "งวดก่อน", value: 3.88, detail: "ม.ค.-เม.ย.", state: "actual" },
+      { label: "ปัจจุบัน", value: 3.95, detail: "พ.ค.-ส.ค.", state: "current" },
+      { label: "คาดการณ์", value: 4.12, detail: "Q4", state: "forecast" },
+      { label: "แรงกดดัน", value: 4.35, detail: "Q1", state: "forecast" },
+      { label: "ต้นทุนสูง", value: 4.59, detail: "stress", state: "forecast" },
+    ],
+    []
+  );
+  const lowScenario = useMemo(() => [3.88, 3.95, 4.02, 4.1, 4.2], []);
+  const baselineScenario = useMemo(() => [3.88, 3.95, 4.0, 4.06, 4.12], []);
+  const max = 4.7;
+  const min = 3.7;
+  const width = isNarrow ? 420 : 720;
+  const height = isNarrow ? 330 : 360;
+  const left = isNarrow ? 38 : 62;
+  const right = isNarrow ? 384 : 660;
+  const top = isNarrow ? 54 : 48;
+  const bottom = isNarrow ? 236 : 264;
+  const reveal = progress;
+  const loopProgress = (loopFrame % 150) / 150;
+  const impact = (((points.at(-1).value - points[1].value) / points[1].value) * 100).toFixed(1);
+
+  const { coords, lowerCoords, baselineCoords, linePath, areaPath, bandPath, baselinePath, marker } = useMemo(() => {
+    const toCoord = (value, index) => ({
+      x: left + (index / (points.length - 1)) * (right - left),
+      y: bottom - ((value - min) / (max - min)) * (bottom - top),
+    });
+    const mainCoords = points.map((point, index) => ({ ...point, ...toCoord(point.value, index) }));
+    const lowCoords = lowScenario.map((value, index) => ({ ...toCoord(value, index), value }));
+    const baseCoords = baselineScenario.map((value, index) => ({ ...toCoord(value, index), value }));
+    const mainPath = createSmoothPath(mainCoords);
+    const lowPath = createPolylinePath(lowCoords);
+    const upperPath = createPolylinePath(mainCoords);
+    const riskBandPath = `${upperPath} ${[...lowCoords]
+      .reverse()
+      .map((point) => `L ${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+      .join(" ")} Z`;
+
+    return {
+      coords: mainCoords,
+      lowerCoords: lowCoords,
+      baselineCoords: baseCoords,
+      linePath: mainPath,
+      areaPath: `${mainPath} L ${mainCoords.at(-1).x.toFixed(1)} ${bottom} L ${mainCoords[0].x.toFixed(1)} ${bottom} Z`,
+      bandPath: riskBandPath,
+      baselinePath: lowPath,
+      marker: getTimelinePoint(mainCoords, loopProgress),
+    };
+  }, [baselineScenario, bottom, left, lowScenario, max, min, points, right, loopProgress]);
 
   return (
-    <div className="tariff-chart" aria-label="กราฟค่าไฟปัจจุบันและคาดการณ์">
+    <div className="tariff-chart remotion-tariff-chart" aria-label="กราฟค่าไฟปัจจุบันและคาดการณ์">
       <div className="tariff-chart-head">
-        <h3>กราฟค่าไฟปัจจุบันและแนวโน้มขาขึ้น</h3>
+        <div>
+          <h3>กราฟค่าไฟปัจจุบันและแนวโน้มขาขึ้น</h3>
+          <p>เส้นแดงคือกรณีต้นทุนสูง พื้นแดงคือช่วงความเสี่ยงที่บิลอาจขยับ</p>
+        </div>
         <span>บาท/หน่วย</span>
       </div>
-      <div className="tariff-line-wrap" ref={chartRef}>
+      <div className="tariff-impact-strip">
+        <div>
+          <strong>3.95</strong>
+          <span>ปัจจุบัน</span>
+        </div>
+        <div>
+          <strong>4.59</strong>
+          <span>stress case</span>
+        </div>
+        <div>
+          <strong>+{impact}%</strong>
+          <span>แรงกดดันต่อหน่วย</span>
+        </div>
+      </div>
+      <div className="tariff-line-wrap">
         <svg className="tariff-line-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="ค่าไฟต่อหน่วยจากปัจจุบันและกรณีคาดการณ์">
           <defs>
             <linearGradient id="tariffLineGradient" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="38%" stopColor="#ff4b4b" />
+              <stop offset="0%" stopColor="#ffefef" />
+              <stop offset="42%" stopColor="#ff4747" />
               <stop offset="100%" stopColor="#d60000" />
             </linearGradient>
             <linearGradient id="tariffAreaGradient" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#d60000" stopOpacity="0.38" />
+              <stop offset="0%" stopColor="#d60000" stopOpacity="0.34" />
               <stop offset="62%" stopColor="#d60000" stopOpacity="0.12" />
               <stop offset="100%" stopColor="#d60000" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="tariffBandGradient" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.02" />
+              <stop offset="46%" stopColor="#ff3333" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#d60000" stopOpacity="0.28" />
             </linearGradient>
             <filter id="tariffGlow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="5" result="blur" />
@@ -705,7 +855,15 @@ function TariffForecastChart() {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            <filter id="tariffCursorGlow" x="-70%" y="-70%" width="240%" height="240%">
+              <feGaussianBlur stdDeviation="8" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
+          <rect className="tariff-forecast-zone" x={coords[1].x} y={top - 18} width={right - coords[1].x} height={bottom - top + 52} style={{ opacity: 0.24 + reveal * 0.24 }} />
           {[3.8, 4.0, 4.2, 4.4, 4.6].map((tick) => {
             const y = bottom - ((tick - min) / (max - min)) * (bottom - top);
             return (
@@ -715,20 +873,39 @@ function TariffForecastChart() {
               </g>
             );
           })}
-          <line className="tariff-current-line" x1={coords[1].x} x2={coords[1].x} y1={top - 4} y2={bottom + 8} />
-          <path className="tariff-area-path" d={areaPath} />
-          <path className="tariff-line-path" d={linePath} pathLength="1" />
-          {coords.map((point, index) => (
-            <g className={`tariff-dot-group ${index === 1 ? "current" : ""} ${index > 1 ? "forecast" : ""}`} transform={`translate(${point.x} ${point.y})`} key={point.label}>
-              <circle className="tariff-dot-halo" r="14" />
-              <circle className="tariff-dot" r="5.5" />
-              <text className="tariff-dot-value" y="-22">{point.value.toFixed(2)}</text>
-            </g>
+          <text className="tariff-zone-label" x={coords[1].x + 18} y={top + 6}>forecast risk zone</text>
+          <line className="tariff-current-line" x1={coords[1].x} x2={coords[1].x} y1={top - 16} y2={bottom + 24} style={{ opacity: reveal }} />
+          <path className="tariff-risk-band" d={bandPath} style={{ opacity: 0.24 + reveal * 0.5 }} />
+          <path className="tariff-area-path" d={areaPath} style={{ opacity: reveal * 0.82 }} />
+          <path className="tariff-baseline-path" d={baselinePath} pathLength="1" style={{ strokeDasharray: 1, strokeDashoffset: 1 - reveal }} />
+          <path className="tariff-line-path" d={linePath} pathLength="1" style={{ strokeDasharray: 1, strokeDashoffset: 1 - reveal }} />
+          {baselineCoords.map((point, index) => (
+            <circle className="tariff-baseline-dot" cx={point.x} cy={point.y} r={index < 2 ? 0 : 3.5} key={`baseline-${index}`} style={{ opacity: reveal * 0.62 }} />
           ))}
+          {lowerCoords.slice(2).map((point, index) => (
+            <text className="tariff-baseline-label" x={point.x} y={point.y + 24} key={`risk-low-${index}`} style={{ opacity: reveal * 0.7 }}>
+              {point.value.toFixed(2)}
+            </text>
+          ))}
+          <g className="tariff-motion-cursor" transform={`translate(${marker.x} ${marker.y})`} style={{ opacity: reveal > 0.82 ? 1 : 0 }}>
+            <circle className="tariff-cursor-halo" r={18 + Math.sin(loopFrame / 7) * 3} />
+            <circle className="tariff-cursor-dot" r="5" />
+          </g>
+          {coords.map((point, index) => {
+            const dotReveal = remotionInterpolate(reveal, [index * 0.12, index * 0.12 + 0.32], [0, 1], remotionEaseOut);
+            const radius = 4.6 + dotReveal * 2.2;
+            return (
+              <g className={`tariff-dot-group ${point.state}`} transform={`translate(${point.x} ${point.y})`} key={point.label} style={{ opacity: dotReveal }}>
+                <circle className="tariff-dot-halo" r={12 + dotReveal * 6} />
+                <circle className="tariff-dot" r={radius} />
+                <text className="tariff-dot-value" y="-24">{point.value.toFixed(2)}</text>
+              </g>
+            );
+          })}
         </svg>
         <div className="tariff-line-labels">
           {points.map((point, index) => (
-            <div className={index > 1 ? "forecast" : ""} key={point.label}>
+            <div className={point.state === "forecast" ? "forecast" : ""} key={point.label}>
               <span>{point.label}</span>
               <small>{point.detail}</small>
             </div>
@@ -736,7 +913,7 @@ function TariffForecastChart() {
         </div>
       </div>
       <div className="tariff-arrow">
-        <span>ต้นทุนพลังงานและ Ft ยังเป็นความเสี่ยงต่อบิลค่าไฟ</span>
+        <span>ยิ่งเส้นแดงไต่ขึ้นเร็ว ลูกค้ายิ่งเห็นเหตุผลในการล็อกต้นทุนด้วย Solar + Battery</span>
         <ArrowRight size={18} />
       </div>
     </div>
