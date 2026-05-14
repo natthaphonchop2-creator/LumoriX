@@ -912,10 +912,6 @@ function TariffForecastChart() {
           ))}
         </div>
       </div>
-      <div className="tariff-arrow">
-        <span>ยิ่งเส้นแดงไต่ขึ้นเร็ว ลูกค้ายิ่งเห็นเหตุผลในการล็อกต้นทุนด้วย Solar + Battery</span>
-        <ArrowRight size={18} />
-      </div>
     </div>
   );
 }

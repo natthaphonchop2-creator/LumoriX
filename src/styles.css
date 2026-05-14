@@ -751,8 +751,7 @@ img {
 }
 
 .ad-panel-heading,
-.tariff-chart-head,
-.tariff-arrow {
+.tariff-chart-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1096,20 +1095,6 @@ img {
 
 .tariff-line-labels .forecast span {
   color: #ff9a9a;
-}
-
-.tariff-arrow {
-  margin-top: 14px;
-  padding-top: 14px;
-  color: rgba(255, 255, 255, 0.78);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.tariff-arrow svg {
-  color: var(--red);
-  flex: 0 0 auto;
 }
 
 .ad-panel-note {
@@ -1963,8 +1948,7 @@ img {
   }
 
   .ad-panel-heading,
-  .tariff-chart-head,
-  .tariff-arrow {
+  .tariff-chart-head {
     align-items: flex-start;
     flex-direction: column;
   }
