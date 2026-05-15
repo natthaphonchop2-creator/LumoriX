@@ -40,6 +40,7 @@ import {
   products,
   provinceNames,
   provinces,
+  routeContent,
   seedArticles,
   stats,
 } from "./data/siteData.js";
@@ -1020,26 +1021,22 @@ function BottomCta() {
   );
 }
 
-function PlansPage() {
+function PlansPage({ focus = "/plans-pricing" }) {
+  const content = routeContent[focus] || routeContent["/plans-pricing"];
   return (
     <PageFrame
-      title="แพ็กเกจ & ราคา"
-      subtitle="โมเดลคล้าย solar-as-a-service: เริ่มต้นง่าย ดูแลครบ และขยายไปสู่แบตเตอรี่ EV และระบบจัดการพลังงาน"
+      title={focus === "/plans-pricing" ? "แพ็กเกจ & ราคา" : content.heading}
+      subtitle={content.body}
       image="/assets/hero-smart-home.png"
     >
       <PlansStrip />
       <section className="section compare-section">
         <div className="section-heading center">
-          <h2>เลือกโมเดลการเป็นเจ้าของ</h2>
-          <p>รองรับทั้ง subscription, ซื้อขาด, เพิ่มแบตเตอรี่ภายหลัง และแผนธุรกิจแบบ SLA</p>
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
         </div>
         <div className="compare-grid">
-          {[
-            ["Subscription", "จ่ายรายเดือน ดูแลระบบครบ เหมาะกับเริ่มต้นโดยลดเงินก้อนแรก"],
-            ["Purchase", "ซื้อระบบเต็มรูปแบบ เหมาะกับบ้านที่ต้องการถือครองสินทรัพย์"],
-            ["Battery Add-on", "เพิ่มแบตเตอรี่และปรับ energy mode ตามพฤติกรรมใช้ไฟ"],
-            ["Business SLA", "สัญญาดูแลพร้อมรายงานประหยัดค่าไฟและ ESG"],
-          ].map(([title, text]) => (
+          {content.highlights.map(([title, text]) => (
             <article key={title}>
               <h3>{title}</h3>
               <p>{text}</p>
@@ -1118,13 +1115,23 @@ function ProductDetailPage({ slug }) {
 }
 
 function CalculatorPage() {
+  const content = routeContent["/calculator"];
   return (
-    <PageFrame title="Solar Calculator" subtitle="ประเมินเบื้องต้นจากค่าไฟรายเดือนและรูปแบบการใช้งาน" image="/assets/hero-smart-home.png">
+    <PageFrame title="Solar Calculator" subtitle={content.body} image="/assets/hero-smart-home.png">
       <CalculatorPanel />
       <section className="section two-column">
         <div>
-          <h2>ผลลัพธ์เป็นจุดเริ่มต้น ไม่ใช่ใบเสนอราคาสุดท้าย</h2>
-          <p>ทีม LumoriX จะตรวจโหลดจริง พื้นที่ติดตั้ง ทิศหลังคา และเงื่อนไขไฟฟ้าก่อนยืนยันแพ็กเกจ</p>
+          <span className="article-category">{content.eyebrow}</span>
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
+          <ul className="check-list">
+            {content.checklist.map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={18} />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         <LeadForm source="Calculator" />
       </section>
@@ -1172,12 +1179,18 @@ function CalculatorPanel() {
 }
 
 function LearnPage() {
+  const { path } = useRouter();
   const [query, setQuery] = useState("");
   const posts = getAllPosts().filter((post) => `${post.title} ${post.category}`.toLowerCase().includes(query.toLowerCase()));
+  const content = path === "/learn/news" ? routeContent["/learn/news"] : routeContent["/go-solar-center/solar-articles"];
 
   return (
-    <PageFrame title="ศูนย์เรียนรู้" subtitle="บทความ ข่าวสาร FAQ และคอนเทนต์ที่ทีม LumoriX โพสต์ได้เองจากระบบแอดมิน" image="/assets/market-grid.png">
+    <PageFrame title={path === "/learn/news" ? "ข่าวสาร LumoriX" : "ศูนย์เรียนรู้"} subtitle={content.body} image="/assets/market-grid.png">
       <section className="section light-section">
+        <div className="section-heading center">
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
+        </div>
         <div className="toolbar">
           <label className="search-box">
             <Search size={18} />
@@ -1250,7 +1263,7 @@ function FaqPage() {
 
 function ProvinceIndexPage() {
   return (
-    <PageFrame title="Solar by Province" subtitle="หน้า landing สำหรับพื้นที่ให้บริการหลัก คล้าย state pages แต่ปรับเป็นจังหวัดในไทย" image="/assets/hero-smart-home.png">
+    <PageFrame title="Solar by Province" subtitle="หน้า landing สำหรับพื้นที่ให้บริการหลักของ LumoriX แยกตามจังหวัดในไทย" image="/assets/hero-smart-home.png">
       <section className="section province-grid">
         {provinces.map((slug) => (
           <Link className="province-card" to={`/solar-by-state/${slug}`} key={slug}>
@@ -1294,15 +1307,19 @@ function ProvincePage({ slug }) {
 }
 
 function QuotePage({ source }) {
+  const content = routeContent[source] || routeContent["/free-solar-quote"];
   return (
-    <PageFrame title="รับข้อเสนอ LumoriX" subtitle="เริ่มจากข้อมูลพื้นฐาน ทีมขายและวิศวกรจะใช้เป็น lead สำหรับประเมินระบบ" image="/assets/hero-smart-home.png">
+    <PageFrame title={source === "/free-solar-quote" ? "รับข้อเสนอ LumoriX" : content.heading} subtitle={content.body} image="/assets/hero-smart-home.png">
       <section className="section two-column">
         <div>
-          <h2>สิ่งที่ทีม LumoriX จะประเมิน</h2>
+          <span className="article-category">{content.eyebrow}</span>
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
           <div className="icon-list">
-            <IconLine icon={<ClipboardCheck />} title="ค่าไฟและโหลด" text="ดูพฤติกรรมใช้ไฟเพื่อเลือกขนาดระบบ" />
-            <IconLine icon={<Home />} title="พื้นที่ติดตั้ง" text="พื้นที่หลังคา ทิศทางแดด และข้อจำกัดหน้างาน" />
-            <IconLine icon={<BatteryCharging />} title="แผนอนาคต" text="แบตเตอรี่ EV charging และ smart home" />
+            {content.highlights.map(([title, text], index) => {
+              const icons = [<ClipboardCheck />, <Home />, <BatteryCharging />];
+              return <IconLine icon={icons[index] || <CheckCircle2 />} title={title} text={text} key={title} />;
+            })}
           </div>
         </div>
         <LeadForm source={source} />
@@ -1312,10 +1329,16 @@ function QuotePage({ source }) {
 }
 
 function ContactPage() {
+  const content = routeContent["/contact-us"];
   return (
-    <PageFrame title="ติดต่อ LumoriX" subtitle="คุยกับทีมพลังงานอัจฉริยะสำหรับบ้าน ธุรกิจ และโครงการอสังหาริมทรัพย์" image="/assets/market-grid.png">
+    <PageFrame title="ติดต่อ LumoriX" subtitle={content.body} image="/assets/market-grid.png">
       <section className="section contact-section">
         <div className="contact-grid">
+          <div className="section-heading">
+            <span className="article-category">{content.eyebrow}</span>
+            <h2>{content.heading}</h2>
+            <p>{content.body}</p>
+          </div>
           <IconLine icon={<Phone />} title="โทร" text={brand.phone} />
           <IconLine icon={<Mail />} title="อีเมล" text={brand.email} />
           <IconLine icon={<MapPin />} title="LINE" text={brand.line} />
@@ -1327,18 +1350,26 @@ function ContactPage() {
 }
 
 function CompanyPage() {
+  const content = routeContent["/company"];
   return (
     <PageFrame
       title="Built for the Future"
-      subtitle="LumoriX คือแพลตฟอร์มซื้อขายพลังงานยุคใหม่ที่เชื่อมเทคโนโลยีเข้ากับพลังงานสะอาด เพื่อสร้างอนาคตที่ยั่งยืน"
+      subtitle={content.body}
       image="/assets/market-grid.png"
     >
       <section className="section two-column">
         <div>
-          <h2>Smart. Reliable. Forward-Thinking. Sustainable.</h2>
-          <p>
-            เรานำโมเดลธุรกิจแบบ solar subscription, hardware bundle, monitoring, service และ marketplace มาปรับให้เหมาะกับตลาดไทยและภูมิภาค
-          </p>
+          <span className="article-category">{content.eyebrow}</span>
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
+          <ul className="check-list">
+            {content.checklist.map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={18} />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="brand-voice">
           {["Innovation", "Intelligence", "Connectivity", "Sustainability", "Efficiency"].map((item) => (
@@ -1352,16 +1383,33 @@ function CompanyPage() {
 }
 
 function BusinessTemplate({ route }) {
-  const [, title, description] = route;
+  const [path, title, description] = route;
+  const content = routeContent[path] || {
+    eyebrow: "LumoriX",
+    heading: title,
+    body: description,
+    highlights: [
+      ["Customer Intent", "อธิบายโจทย์ของลูกค้าและขั้นตอนต่อไปอย่างชัดเจน"],
+      ["Lead Capture", "เชื่อมต่อกับฟอร์มเพื่อส่งข้อมูลเข้าระบบ lead"],
+      ["Service Ready", "รองรับการต่อยอดเป็น campaign หรือ service page เฉพาะทาง"],
+    ],
+    checklist: ["เก็บข้อมูลลูกค้า", "ประเมินความเหมาะสม", "ส่งต่อทีมขายหรือวิศวกร"],
+  };
   return (
     <PageFrame title={title} subtitle={description} image="/assets/hero-smart-home.png">
       <section className="section two-column">
         <div>
-          <h2>{title}</h2>
-          <p>{description}</p>
-          <p>
-            หน้าในกลุ่มนี้ถูกออกแบบให้เทียบเคียง information architecture ของ Sunrun แต่ปรับข้อความและข้อเสนอเป็นของ LumoriX สำหรับตลาดไทย
-          </p>
+          <span className="article-category">{content.eyebrow}</span>
+          <h2>{content.heading}</h2>
+          <p>{content.body}</p>
+          <ul className="check-list">
+            {content.checklist.map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={18} />
+                {item}
+              </li>
+            ))}
+          </ul>
           <div className="button-row">
             <Link className="primary-button" to="/free-solar-quote">
               ขอใบเสนอราคา
@@ -1373,7 +1421,20 @@ function BusinessTemplate({ route }) {
         </div>
         <LeadForm source={title} />
       </section>
-      <ProductEcosystem />
+      <section className="section light-section">
+        <div className="section-heading center">
+          <h2>รายละเอียดที่ช่วยให้ตัดสินใจเร็วขึ้น</h2>
+          <p>แต่ละหน้าเขียนให้ตรงกับเจตนาของลูกค้าและเชื่อมต่อไปยัง lead workflow ของ LumoriX</p>
+        </div>
+        <div className="compare-grid">
+          {content.highlights.map(([itemTitle, text]) => (
+            <article key={itemTitle}>
+              <h3>{itemTitle}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </PageFrame>
   );
 }
@@ -1381,14 +1442,15 @@ function BusinessTemplate({ route }) {
 function GeneratedTemplate({ path }) {
   const slug = path.split("/").filter(Boolean).pop() || "lumorix";
   const title = titleFromSlug(slug);
+  const displayPath = path.replace(/sunrun/gi, "lumorix");
   return (
-    <PageFrame title={title} subtitle={`LumoriX equivalent page for ${path}`} image="/assets/market-grid.png">
+    <PageFrame title={title} subtitle={`หน้าแคมเปญและข้อมูลเฉพาะทางของ LumoriX สำหรับ ${displayPath}`} image="/assets/market-grid.png">
       <section className="section two-column">
         <div>
           <h2>{title}</h2>
           <p>
-            Route นี้รองรับเป็นหน้า template สำหรับ content หรือ campaign เฉพาะทาง เช่น promotion, grid program, product partner, policy และ landing page
-            ที่มีรูปแบบธุรกิจใกล้เคียง Sunrun
+            Route นี้รองรับหน้า campaign เฉพาะทาง เช่น promotion, grid program, product partner, policy หรือ landing page ใหม่
+            โดยใช้โครงเดียวกับระบบ lead, content และ responsive layout ของ LumoriX
           </p>
           <ul className="check-list">
             <li>
@@ -1553,7 +1615,7 @@ function SiteMapPage() {
   const coreRoutes = [["/", "Home"], ...businessRoutes.map(([path, title]) => [path, title]), ...articleRoutes, ...provinceRoutes];
 
   return (
-    <PageFrame title="Page Library" subtitle="โครง route ที่ครอบคลุมหน้าแบบ Sunrun และปรับเป็นโมเดล LumoriX" image="/assets/market-grid.png">
+    <PageFrame title="Page Library" subtitle="โครง route สำหรับเว็บไซต์ LumoriX ครอบคลุม solar, storage, EV, customer, partner และ learning pages" image="/assets/market-grid.png">
       <section className="section sitemap-section">
         {coreRoutes.map(([route, title]) => (
           <Link className="sitemap-row" to={route} key={route}>
@@ -1607,14 +1669,26 @@ function getAllPosts() {
 }
 
 function generateArticleFromSlug(slug) {
+  const readable = titleFromSlug(slug);
+  const isBattery = /battery|storage|backup|power-outage/.test(slug);
+  const isEv = /ev|electric-vehicle|charger/.test(slug);
+  const isCost = /cost|bill|savings|worth|tax|incentives/.test(slug);
+  const category = isBattery ? "Battery Guide" : isEv ? "EV Charging" : isCost ? "Savings Guide" : "Solar Guide";
+  const body = isBattery
+    ? `บทความ ${readable} อธิบายวิธีคิดเรื่องแบตเตอรี่บ้าน ตั้งแต่โหลดที่ต้องสำรอง ขนาดความจุ โหมดประหยัดค่าไฟ ไปจนถึงข้อจำกัดที่ควรรู้ก่อนติดตั้งจริง`
+    : isEv
+      ? `บทความ ${readable} ช่วยเจ้าของรถไฟฟ้าประเมินระบบไฟบ้าน เวลาในการชาร์จ ขนาด charger และวิธีใช้โซลาร์ร่วมกับการชาร์จให้คุ้มค่าขึ้น`
+      : isCost
+        ? `บทความ ${readable} ช่วยอธิบายต้นทุน ค่าไฟ โอกาสประหยัด และปัจจัยที่ทำให้แต่ละบ้านคืนทุนต่างกัน เพื่อให้ลูกค้าตัดสินใจด้วยข้อมูลที่ตรงกับบ้านตัวเอง`
+        : `บทความ ${readable} สรุปพื้นฐานโซลาร์สำหรับเจ้าของบ้านและธุรกิจ ตั้งแต่วิธีทำงานของระบบ การประเมินหลังคา ไปจนถึงคำถามที่ควรถามก่อนขอใบเสนอราคา`;
   return {
     id: `generated-${slug}`,
     slug,
-    category: "Solar Guide",
-    title: titleFromSlug(slug),
-    excerpt: "บทความ template สำหรับหัวข้อพลังงานที่อยู่ใน route library ของ LumoriX",
+    category,
+    title: readable,
+    excerpt: "บทความความรู้สำหรับช่วยลูกค้าประเมินโซลาร์ แบตเตอรี่ EV และต้นทุนพลังงานก่อนขอใบเสนอราคา",
     date: "2026-05-01",
-    body: `หัวข้อ ${titleFromSlug(slug)} ถูกเตรียมเป็นหน้า content template เพื่อรองรับ SEO, campaign และคลังความรู้แบบเดียวกับศูนย์เรียนรู้ของ Sunrun แต่ปรับเป็นภาษาของ LumoriX`,
+    body,
   };
 }
 
@@ -1622,7 +1696,7 @@ function titleFromSlug(slug) {
   return slug
     .split("-")
     .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => (word.toLowerCase() === "sunrun" ? "LumoriX" : word.charAt(0).toUpperCase() + word.slice(1)))
     .join(" ");
 }
 
